@@ -177,3 +177,13 @@ ALTER TYPE user_role_enum ADD VALUE IF NOT EXISTS 'user';
 ALTER TYPE user_role_enum ADD VALUE IF NOT EXISTS 'admin';
 ALTER TABLE users ADD COLUMN login_id VARCHAR UNIQUE;
 
+-- 예측결과
+CREATE TABLE prediction_result_image (
+    image_id INT PRIMARY KEY REFERENCES input_image(id),   -- input_image.id = prediction_result_image.image_id
+    upload_id INT NOT NULL REFERENCES uploads(upload_id),  -- 같은 업로드 배치 단위로 연결
+    gradcam_path TEXT NOT NULL,                            -- GradCAM 이미지 S3 경로
+    is_defect BOOLEAN NOT NULL,                            -- 불량 여부
+    defect_probability FLOAT,                              -- 불량 확률
+    created_at TIMESTAMP DEFAULT now(),                    -- DB 삽입 시각
+    tested_at TIMESTAMP                                    -- 모델 테스트 수행 시각 (Python에서 전달)
+);
