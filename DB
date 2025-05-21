@@ -175,3 +175,5 @@ INSERT INTO users (
 
 ALTER TYPE user_role_enum ADD VALUE IF NOT EXISTS 'user';
 ALTER TYPE user_role_enum ADD VALUE IF NOT EXISTS 'admin';
+ALTER TABLE users ADD COLUMN login_id VARCHAR UNIQUE;
+
