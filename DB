@@ -56,16 +56,35 @@ CREATE TABLE input_sensor_data (
     created_at TIMESTAMP DEFAULT now()
 );
 
+-- ENUM 타입 생성
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'sensor_task_type_enum') THEN
+        CREATE TYPE sensor_task_type_enum AS ENUM (
+            'binary_classification',
+            'multi_label',
+            'binary_and_multi_label'
+        );
+    END IF;
+END $$;
+
+-- 새 컬럼 생성 (ENUM 타입으로)
+ALTER TABLE uploads
+ADD COLUMN task_type sensor_task_type_enum;
+
 --6.input_image
 CREATE TABLE input_image (
-    id SERIAL PRIMARY KEY,
-    upload_id INT REFERENCES uploads(upload_id),
-    image_path TEXT,
-    width INT,
+    id SERIAL PRIMARY KEY,                          -- 각 image에 대한 id 생성되는 것 (PK)
+    upload_id INT REFERENCES uploads(upload_id),    -- 배치 단위로 같은 번호 부여됨
+    image_path TEXT,                                -- S3의 path
+    width INT,                                      -- PIL로 확인 가능 (height도 동일)
     height INT,
-    format VARCHAR,
-    created_at TIMESTAMP DEFAULT now()
+    format VARCHAR,                                 -- JPEG인지, PNG 등
+    created_at TIMESTAMP DEFAULT now()              -- DB 적재 당시 시간
 );
+
+ALTER TABLE input_image
+ADD COLUMN is_defect BOOLEAN;  -- 정상(True), 불량(False) 여부
 
 --7.input_target(센서에 대한 것)
 CREATE TABLE input_target (
@@ -164,25 +183,6 @@ CREATE INDEX idx_target_upload ON input_target(upload_id);
 CREATE INDEX idx_result_upload ON prediction_result(upload_id);
 CREATE INDEX idx_model_company ON model_registry(company_id);
 
-
--- ENUM 타입 생성
-DO $$
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'sensor_task_type_enum') THEN
-        CREATE TYPE sensor_task_type_enum AS ENUM (
-            'binary_classification',
-            'multi_label',
-            'binary_and_multi_label'
-        );
-    END IF;
-END $$;
-
--- 새 컬럼 생성 (ENUM 타입으로)
-ALTER TABLE uploads
-ADD COLUMN task_type sensor_task_type_enum;
-
-ALTER TABLE input_image
-ADD COLUMN is_defect BOOLEAN;  -- 정상(True), 불량(False) 여부
 
 -- 테스트 생성
 INSERT INTO companies (company_id, company_name)
