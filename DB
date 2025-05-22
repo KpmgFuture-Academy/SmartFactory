@@ -119,17 +119,6 @@ CREATE TABLE prediction_image_result (
 
 DROP TABLE IF EXISTS prediction_image_result CASCADE;
 
-CREATE TABLE prediction_result_image (
-    image_id INT PRIMARY KEY REFERENCES input_image(id),  -- 개별 이미지 기준
-    upload_id INT NOT NULL REFERENCES uploads(upload_id), -- 예측 수행 대상 배치
-    model_id INT REFERENCES model_registry(id),           -- 사용된 모델
-    gradcam_path TEXT NOT NULL,                           -- S3에 저장된 GradCAM 결과
-    is_defect BOOLEAN NOT NULL,                           -- 예측 클래스 (불량/정상)
-    defect_probability FLOAT,                             -- 예측 확률 (0~1)
-    created_at TIMESTAMP DEFAULT now(),                   -- DB 저장 시점
-    tested_at TIMESTAMP                                   -- 모델 실제 추론 수행 시점
-);
-
 --10.model_registry
 CREATE TABLE model_registry (
     id SERIAL PRIMARY KEY,
@@ -232,4 +221,17 @@ CREATE TABLE prediction_result_image (
     defect_probability FLOAT,                              -- 불량 확률
     created_at TIMESTAMP DEFAULT now(),                    -- DB 삽입 시각
     tested_at TIMESTAMP                                    -- 모델 테스트 수행 시각 (Python에서 전달)
+);
+
+DROP TABLE IF EXISTS prediction_result_image CASCADE;
+
+CREATE TABLE prediction_result_image (
+    image_id INT PRIMARY KEY REFERENCES input_image(id),  -- 개별 이미지 기준
+    upload_id INT NOT NULL REFERENCES uploads(upload_id), -- 예측 수행 대상 배치
+    model_id INT REFERENCES model_registry(id),           -- 사용된 모델
+    gradcam_path TEXT NOT NULL,                           -- S3에 저장된 GradCAM 결과
+    is_defect BOOLEAN NOT NULL,                           -- 예측 클래스 (불량/정상)
+    defect_probability FLOAT,                             -- 예측 확률 (0~1)
+    created_at TIMESTAMP DEFAULT now(),                   -- DB 저장 시점
+    tested_at TIMESTAMP                                   -- 모델 실제 추론 수행 시점
 );
