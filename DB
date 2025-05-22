@@ -92,6 +92,21 @@ CREATE TABLE prediction_result (
     created_at TIMESTAMP DEFAULT now()
 );
 
+DROP TABLE IF EXISTS prediction_result_sensor CASCADE;
+
+CREATE TABLE prediction_result_sensor (
+    id SERIAL PRIMARY KEY,
+    upload_id INT NOT NULL REFERENCES uploads(upload_id),   -- 예측 수행 대상 배치
+    model_id INT REFERENCES model_registry(id),             -- 사용된 모델
+    timestamp TIMESTAMP,                                    -- 예측 시점 (센서의 time point)
+    predicted_failure BOOLEAN,                              -- 예측 클래스
+    predicted_modes JSONB,                                  -- 다중 고장 모드 예측 결과
+    anomaly_score FLOAT,                                    -- 이상 점수
+    shap_summary JSONB,                                     -- SHAP 등 해석 정보
+    created_at TIMESTAMP DEFAULT now(),                     -- DB 저장 시점
+    tested_at TIMESTAMP                                     -- 모델 실제 추론 수행 시점
+);
+
 --9.prediction_image_result
 CREATE TABLE prediction_image_result (
     id SERIAL PRIMARY KEY,
@@ -100,6 +115,19 @@ CREATE TABLE prediction_image_result (
     mask_path TEXT,
     anomaly_map_path TEXT,
     created_at TIMESTAMP DEFAULT now()
+);
+
+DROP TABLE IF EXISTS prediction_image_result CASCADE;
+
+CREATE TABLE prediction_result_image (
+    image_id INT PRIMARY KEY REFERENCES input_image(id),  -- 개별 이미지 기준
+    upload_id INT NOT NULL REFERENCES uploads(upload_id), -- 예측 수행 대상 배치
+    model_id INT REFERENCES model_registry(id),           -- 사용된 모델
+    gradcam_path TEXT NOT NULL,                           -- S3에 저장된 GradCAM 결과
+    is_defect BOOLEAN NOT NULL,                           -- 예측 클래스 (불량/정상)
+    defect_probability FLOAT,                             -- 예측 확률 (0~1)
+    created_at TIMESTAMP DEFAULT now(),                   -- DB 저장 시점
+    tested_at TIMESTAMP                                   -- 모델 실제 추론 수행 시점
 );
 
 --10.model_registry
@@ -118,6 +146,24 @@ CREATE TABLE model_registry (
     accuracy FLOAT,
     trained_on_upload_id INT, -- 연결된 학습 데이터
     retrain_count INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT now()
+);
+
+DROP TABLE IF EXISTS model_registry CASCADE;
+
+CREATE TABLE model_registry (
+    id SERIAL PRIMARY KEY,
+    model_name VARCHAR,                         -- 예: 'autokeras_v1', 'lstm_sensor_v2'
+    version VARCHAR,                            -- 예: 'v1.0', '20240520_001'
+    mlflow_run_id VARCHAR,                      -- MLflow에서 고유하게 모델 추적
+    trained_on_upload_id INT REFERENCES uploads(upload_id), -- 학습에 사용된 데이터 배치
+    company_id UUID REFERENCES companies(company_id),       -- 소속 회사 정보
+
+    -- 모델 전체 성능 메트릭
+    f1_score FLOAT,
+    auc_score FLOAT,
+    accuracy FLOAT,
+    
     created_at TIMESTAMP DEFAULT now()
 );
 
