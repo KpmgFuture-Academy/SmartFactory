@@ -185,13 +185,14 @@ ON CONFLICT DO NOTHING;
 
 INSERT INTO users (
     user_id, company_id, username, password_hash,
-    department, role, is_approved, login_id
+    department, position, role, is_approved, login_id
 ) VALUES (
     '22222222-2222-2222-2222-222222222222',
     '11111111-1111-1111-1111-111111111111',
     'test_user',
     'hashedpassword123',
     'AI Team',
+    'manager',
     'worker',
     TRUE,
     'test_user_01'
