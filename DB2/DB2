@@ -120,12 +120,11 @@ CREATE TABLE model_registry (
     version VARCHAR NOT NULL,
     mlflow_run_id VARCHAR NOT NULL,
     trained_on_upload_id INT REFERENCES uploads(upload_id),
-    company_id UUID REFERENCES companies(company_id),
     process_type VARCHAR NOT NULL CHECK (process_type IN ('image', 'sensor_csv')),
     accuracy FLOAT,
     f1_score FLOAT,
     auc_score FLOAT,
-    is_active BOOLEAN DEFAULT FALSE,
+    is_active BOOLEAN DEFAULT FALSE,      -- 현재 사용되는 model만 True 가 뜸 
     created_at TIMESTAMP DEFAULT now()
 );
 
@@ -147,6 +146,31 @@ CREATE TABLE feat_formula (
     feature_name VARCHAR NOT NULL,                 -- 예: 'temp_pressure_ratio'
     formula TEXT NOT NULL,                         -- 예: 'temperature / pressure'
     created_at TIMESTAMP DEFAULT now()
+);
+
+-- 12. Retrain_schedule_log (모델 재학습 스케쥴 로그)
+CREATE TABLE retrain_schedule_log (
+    id SERIAL PRIMARY KEY,
+    company_id UUID REFERENCES companies(company_id),        -- 소속 회사
+    model_id INT REFERENCES model_registry(id),              -- 재학습 기준이 된 모델
+    triggered_at TIMESTAMP DEFAULT now(),                    -- 트리거된 시점
+    scheduled_for TIMESTAMP,                                 -- 재학습 예정 시각
+    completed_at TIMESTAMP,                                  -- 재학습 완료 시각
+    was_model_updated BOOLEAN,                               -- 모델이 교체되었는지 여부
+    comments TEXT
+);
+
+-- 13. Model_selection_log
+CREATE TABLE model_selection_log (
+    id SERIAL PRIMARY KEY,
+    process_type process_type_enum NOT NULL,
+    old_model_id INT REFERENCES model_registry(id),          -- 기존 모델 (is_active = TRUE인 것)
+    new_model_id INT REFERENCES model_registry(id),          -- 새로운 후보 모델
+    accuracy_diff FLOAT,                                     -- 정확도 차이
+    selected_by_user_id UUID REFERENCES users(user_id),      -- 수락/거절한 사용자
+    was_accepted BOOLEAN,                                    -- 수락 여부
+    reason TEXT,                                              -- 수락/거절 사유 (자유 입력)
+    selected_at TIMESTAMP DEFAULT now()
 );
 
 -- 인덱스 최적화
