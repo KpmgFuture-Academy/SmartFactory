@@ -131,7 +131,6 @@ CREATE TABLE model_registry (
 -- 10. Time Batch Cycle (센서 불량 주기)
 CREATE TABLE time_batch_cycle (
     id SERIAL PRIMARY KEY,
-    company_id UUID REFERENCES companies(company_id),
     upload_id INT REFERENCES uploads(upload_id),
     batch_interval_minutes INT NOT NULL,           -- 예: 60분 단위 주기
     detected_from TIMESTAMP,                       -- 이 주기의 적용 시작 시점
@@ -141,7 +140,6 @@ CREATE TABLE time_batch_cycle (
 -- 11. Feature Engineering 공식 테이블
 CREATE TABLE feat_formula (
     id SERIAL PRIMARY KEY,
-    company_id UUID REFERENCES companies(company_id),
     source_upload_id INT REFERENCES uploads(upload_id),
     feature_name VARCHAR NOT NULL,                 -- 예: 'temp_pressure_ratio'
     formula TEXT NOT NULL,                         -- 예: 'temperature / pressure'
@@ -151,7 +149,6 @@ CREATE TABLE feat_formula (
 -- 12. Retrain_schedule_log (모델 재학습 스케쥴 로그)
 CREATE TABLE retrain_schedule_log (
     id SERIAL PRIMARY KEY,
-    company_id UUID REFERENCES companies(company_id),        -- 소속 회사
     model_id INT REFERENCES model_registry(id),              -- 재학습 기준이 된 모델
     triggered_at TIMESTAMP DEFAULT now(),                    -- 트리거된 시점
     scheduled_for TIMESTAMP,                                 -- 재학습 예정 시각
