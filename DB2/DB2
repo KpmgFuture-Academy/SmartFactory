@@ -91,8 +91,8 @@ CREATE TABLE input_image (
 -- 7. 모델 레지스트리 (활성 모델 관리 포함)
 CREATE TABLE model_registry (
     id SERIAL PRIMARY KEY,
-    model_name VARCHAR NOT NULL,
-    version VARCHAR NOT NULL,
+    model_name VARCHAR NOT NULL,            -- run.info.run_name  # ex: 'efficient-lynx-742'
+    version VARCHAR NOT NULL,               -- version = datetime.now().strftime("v%Y%m%d_%H%M%S") ex. v20250524_162754
     mlflow_run_id VARCHAR NOT NULL,
     trained_on_upload_id INT REFERENCES uploads(upload_id),
     data_type data_type NOT NULL,
