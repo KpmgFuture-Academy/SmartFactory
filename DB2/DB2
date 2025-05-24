@@ -22,7 +22,7 @@ BEGIN
     END IF;
 END $$;
 
--- 기업 & 사용자
+-- 1. 기업 정보 
 CREATE TABLE companies (
     company_id UUID PRIMARY KEY,
     company_name VARCHAR NOT NULL,
@@ -31,74 +31,77 @@ CREATE TABLE companies (
     process VARCHAR
 );
 
+-- 2. 사용자
 CREATE TABLE users (
     user_id UUID PRIMARY KEY,
     company_id UUID REFERENCES companies(company_id),
-    username VARCHAR NOT NULL,
-    password_hash VARCHAR NOT NULL,
-    department VARCHAR,
-    role user_role_enum,
-    login_id VARCHAR UNIQUE,
-    is_approved BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT now()
+    username VARCHAR NOT NULL,                   -- 사용자 이름 ex. 김노동
+    password_hash VARCHAR NOT NULL,              -- 사용자 설정 PW
+    department VARCHAR,                          -- 부서명 ex. AI 부서
+    position VARCHAR,                            -- 직책/직급 ex. 총책임자
+    role user_role_enum,                         -- 역할 worker / admin
+    login_id VARCHAR UNIQUE,                     -- 사용자 설정 ID
+    is_approved BOOLEAN DEFAULT FALSE,           -- Admin 승인 여부
+    created_at TIMESTAMP DEFAULT now()           -- DB 생성 시간 
 );
 
--- 업로드 정보
+-- 3. 업로드 정보
 CREATE TABLE uploads (
     upload_id SERIAL PRIMARY KEY,
     company_id UUID REFERENCES companies(company_id),
     uploader_id UUID REFERENCES users(user_id),
     file_key TEXT NOT NULL,                          -- s3에 있는 폴더 경로 예: uploads/batch_29/
     file_type data_type NOT NULL,                    -- image or sensor_csv
-    has_target BOOLEAN DEFAULT FALSE,
+    has_target BOOLEAN DEFAULT FALSE,                -- Target 존재 여부 
     label_type label_type_enum,                      -- 이비지 
     task_type sensor_task_type_enum,                 -- 센서
     created_at TIMESTAMP DEFAULT now()
 );
 
--- 센서 데이터 및 타겟
+-- 4. 센서 데이터
 CREATE TABLE input_sensor_data (
     id SERIAL PRIMARY KEY,
-    upload_id INT REFERENCES uploads(upload_id),
-    timestamp TIMESTAMP,
-    features JSONB,
+    upload_id INT REFERENCES uploads(upload_id),     
+    timestamp TIMESTAMP,                             
+    features JSONB,                                  -- 선택된 features  ex.{""Torque [Nm]"": 42.8, ""Tool wear [min]"": ...}
     created_at TIMESTAMP DEFAULT now()
 );
 
+-- 5. 센서 타겟
 CREATE TABLE input_target (
     id SERIAL PRIMARY KEY,
     upload_id INT REFERENCES uploads(upload_id),
-    machine_failure BOOLEAN,
-    failure_modes JSONB,
+    machine_failure BOOLEAN,                         -- machine failure 여부 True/False
+    failure_modes JSONB,                             -- multi failure 여부 ex. {""HDF"": 0, ""OSF"": 0, ""PWF"": 0, ""RNF"": 0, ""TWF"": 0}
     created_at TIMESTAMP DEFAULT now()
 );
 
--- 이미지 데이터
+-- --6. 이미지 데이터
 CREATE TABLE input_image (
     id SERIAL PRIMARY KEY,
     upload_id INT REFERENCES uploads(upload_id),
-    image_path TEXT,
-    width INT,
+    image_path TEXT,                                  -- s3에서 각각 image 경로 
+    width INT,                                                 
     height INT,
-    format VARCHAR,
-    is_defect BOOLEAN,
+    format VARCHAR,                                   -- ex. png,jpg 등
+    is_defect BOOLEAN,                                -- defect인지 여부
     created_at TIMESTAMP DEFAULT now()
 );
 
--- 센서 예측 결과
+-- 7. 센서 예측 결과
 CREATE TABLE prediction_result_sensor (
     id SERIAL PRIMARY KEY,
     upload_id INT NOT NULL REFERENCES uploads(upload_id),
     model_id INT REFERENCES model_registry(id),
     timestamp TIMESTAMP,
-    predicted_failure BOOLEAN,
-    predicted_modes JSONB,
+    predicted_failure BOOLEAN,                        -- failure 여부 에측 결과
+    predicted_modes JSONB,                            -- predicted의 결과 여부
     shap_summary JSONB,
     created_at TIMESTAMP DEFAULT now(),
     tested_at TIMESTAMP
 );
 
--- 이미지 예측 결과
+-- 8. 이미지 예측 결과
 CREATE TABLE prediction_result_image (
     image_id INT PRIMARY KEY REFERENCES input_image(id),
     upload_id INT NOT NULL REFERENCES uploads(upload_id),
@@ -110,7 +113,7 @@ CREATE TABLE prediction_result_image (
     tested_at TIMESTAMP
 );
 
--- 모델 레지스트리 (활성 모델 관리 포함)
+-- 9. 모델 레지스트리 (활성 모델 관리 포함)
 CREATE TABLE model_registry (
     id SERIAL PRIMARY KEY,
     model_name VARCHAR NOT NULL,
@@ -123,6 +126,26 @@ CREATE TABLE model_registry (
     f1_score FLOAT,
     auc_score FLOAT,
     is_active BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT now()
+);
+
+-- 10. Time Batch Cycle (센서 불량 주기)
+CREATE TABLE time_batch_cycle (
+    id SERIAL PRIMARY KEY,
+    company_id UUID REFERENCES companies(company_id),
+    upload_id INT REFERENCES uploads(upload_id),
+    batch_interval_minutes INT NOT NULL,           -- 예: 60분 단위 주기
+    detected_from TIMESTAMP,                       -- 이 주기의 적용 시작 시점
+    created_at TIMESTAMP DEFAULT now()
+);
+
+-- 11. Feature Engineering 공식 테이블
+CREATE TABLE feat_formula (
+    id SERIAL PRIMARY KEY,
+    company_id UUID REFERENCES companies(company_id),
+    source_upload_id INT REFERENCES uploads(upload_id),
+    feature_name VARCHAR NOT NULL,                 -- 예: 'temp_pressure_ratio'
+    formula TEXT NOT NULL,                         -- 예: 'temperature / pressure'
     created_at TIMESTAMP DEFAULT now()
 );
 
