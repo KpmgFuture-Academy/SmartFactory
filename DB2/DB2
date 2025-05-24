@@ -22,7 +22,7 @@ BEGIN
     END IF;
 END $$;
 
--- companies
+-- 기업 & 사용자
 CREATE TABLE companies (
     company_id UUID PRIMARY KEY,
     company_name VARCHAR NOT NULL,
@@ -31,7 +31,6 @@ CREATE TABLE companies (
     process VARCHAR
 );
 
--- users
 CREATE TABLE users (
     user_id UUID PRIMARY KEY,
     company_id UUID REFERENCES companies(company_id),
@@ -44,20 +43,20 @@ CREATE TABLE users (
     created_at TIMESTAMP DEFAULT now()
 );
 
--- uploads
+-- 업로드 정보
 CREATE TABLE uploads (
     upload_id SERIAL PRIMARY KEY,
     company_id UUID REFERENCES companies(company_id),
     uploader_id UUID REFERENCES users(user_id),
-    file_key TEXT NOT NULL,             -- aws 폴더 루트 ex. uploads/test/
-    file_type data_type NOT NULL,  -- image/sensor_csv
-    has_target BOOLEAN DEFAULT FALSE,    
-    label_type label_type_enum,   -- 이미지만 
-    task_type sensor_task_type_enum, -- 센서만
+    file_key TEXT NOT NULL,                          -- 예: uploads/batch_29/
+    file_type data_type NOT NULL,                    -- image or sensor_csv
+    has_target BOOLEAN DEFAULT FALSE,
+    label_type label_type_enum,
+    task_type sensor_task_type_enum,
     created_at TIMESTAMP DEFAULT now()
 );
 
--- input_sensor_data 
+-- 센서 데이터 및 타겟
 CREATE TABLE input_sensor_data (
     id SERIAL PRIMARY KEY,
     upload_id INT REFERENCES uploads(upload_id),
@@ -66,7 +65,15 @@ CREATE TABLE input_sensor_data (
     created_at TIMESTAMP DEFAULT now()
 );
 
--- input_image
+CREATE TABLE input_target (
+    id SERIAL PRIMARY KEY,
+    upload_id INT REFERENCES uploads(upload_id),
+    machine_failure BOOLEAN,
+    failure_modes JSONB,
+    created_at TIMESTAMP DEFAULT now()
+);
+
+-- 이미지 데이터
 CREATE TABLE input_image (
     id SERIAL PRIMARY KEY,
     upload_id INT REFERENCES uploads(upload_id),
@@ -78,16 +85,7 @@ CREATE TABLE input_image (
     created_at TIMESTAMP DEFAULT now()
 );
 
--- input_target (센서용)
-CREATE TABLE input_target (
-    id SERIAL PRIMARY KEY,
-    upload_id INT REFERENCES uploads(upload_id),
-    machine_failure BOOLEAN,
-    failure_modes JSONB,  -- multi 일때 
-    created_at TIMESTAMP DEFAULT now()
-);
-
--- prediction_result_sensor
+-- 센서 예측 결과
 CREATE TABLE prediction_result_sensor (
     id SERIAL PRIMARY KEY,
     upload_id INT NOT NULL REFERENCES uploads(upload_id),
@@ -100,7 +98,7 @@ CREATE TABLE prediction_result_sensor (
     tested_at TIMESTAMP
 );
 
--- prediction_result_image
+-- 이미지 예측 결과
 CREATE TABLE prediction_result_image (
     image_id INT PRIMARY KEY REFERENCES input_image(id),
     upload_id INT NOT NULL REFERENCES uploads(upload_id),
@@ -112,13 +110,13 @@ CREATE TABLE prediction_result_image (
     tested_at TIMESTAMP
 );
 
--- model_registry 
+-- 모델 레지스트리 (활성 모델 관리 포함)
 CREATE TABLE model_registry (
     id SERIAL PRIMARY KEY,
     model_name VARCHAR NOT NULL,
     version VARCHAR NOT NULL,
     mlflow_run_id VARCHAR NOT NULL,
-    trained_on_upload_id INT REFERENCES uploads(upload_id), -- 학습에 사용되는 upload_id
+    trained_on_upload_id INT REFERENCES uploads(upload_id),
     company_id UUID REFERENCES companies(company_id),
     process_type VARCHAR NOT NULL CHECK (process_type IN ('image', 'sensor_csv')),
     accuracy FLOAT,
@@ -136,20 +134,21 @@ CREATE INDEX idx_target_upload ON input_target(upload_id);
 CREATE INDEX idx_model_company ON model_registry(company_id);
 CREATE INDEX idx_model_process_active ON model_registry(process_type, is_active);
 
--- 테스트 데이터 삽입 (테스트용)
+-- 테스트 데이터 삽입
 INSERT INTO companies (company_id, company_name)
 VALUES ('11111111-1111-1111-1111-111111111111', 'Test Company')
 ON CONFLICT DO NOTHING;
 
 INSERT INTO users (
-    user_id, company_id, username, password_hash, department, role, is_approved, login_id
+    user_id, company_id, username, password_hash,
+    department, role, is_approved, login_id
 ) VALUES (
     '22222222-2222-2222-2222-222222222222',
     '11111111-1111-1111-1111-111111111111',
     'test_user',
     'hashedpassword123',
     'AI Team',
-    'manager',
+    'worker',
     TRUE,
     'test_user_01'
 );
