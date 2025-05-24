@@ -84,7 +84,7 @@ CREATE TABLE input_image (
     width INT,                                                 
     height INT,
     format VARCHAR,                                   -- ex. png,jpg 등
-    is_defect BOOLEAN,                                -- defect인지 여부
+    is_not_defect BOOLEAN,                                -- defect인지 여부(defect이면 False)
     created_at TIMESTAMP DEFAULT now()
 );
 
