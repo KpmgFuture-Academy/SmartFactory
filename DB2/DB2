@@ -51,7 +51,7 @@ CREATE TABLE uploads (
     company_id UUID REFERENCES companies(company_id),
     uploader_id UUID REFERENCES users(user_id),
     file_key TEXT NOT NULL,                          -- s3에 있는 폴더 경로 예: uploads/batch_29/
-    file_type data_type NOT NULL,                    -- image or sensor_csv
+    data_type data_type NOT NULL,                    -- image or sensor_csv
     has_target BOOLEAN DEFAULT FALSE,                -- Target 존재 여부 
     label_type label_type_enum,                      -- 이비지 
     task_type sensor_task_type_enum,                 -- 센서
