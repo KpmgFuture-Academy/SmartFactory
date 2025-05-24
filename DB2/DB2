@@ -175,7 +175,6 @@ CREATE INDEX idx_uploads_company ON uploads(company_id);
 CREATE INDEX idx_sensor_upload ON input_sensor_data(upload_id);
 CREATE INDEX idx_image_upload ON input_image(upload_id);
 CREATE INDEX idx_target_upload ON input_target(upload_id);
-CREATE INDEX idx_model_company ON model_registry(company_id);
 CREATE INDEX idx_model_process_active ON model_registry(data_type, is_active);
 
 -- 테스트 데이터 삽입
