@@ -110,7 +110,7 @@ CREATE TABLE input_image (
     width INT,                                                 
     height INT,
     format VARCHAR,                                   -- ex. png,jpg 등
-    is_not_defect BOOLEAN,                                -- defect인지 여부(defect이면 False)
+    is_defect BOOLEAN,                                -- defect인지 여부(defect이면 False)
     created_at TIMESTAMP DEFAULT now()
 );
 
@@ -213,10 +213,31 @@ CREATE TABLE model_selection_log (
     old_model_id VARCHAR(10) REFERENCES model_registry(id),          -- 기존 모델 (is_active = TRUE인 것)
     new_model_id VARCHAR(10) REFERENCES model_registry(id),          -- 새로운 후보 모델
     accuracy_diff FLOAT,                                     -- 정확도 차이
+    f1_score_diff FLOAT,
+    auc_score_diff FLOAT, 
     selected_by_user_id UUID REFERENCES users(user_id),      -- 수락/거절한 사용자
     was_accepted BOOLEAN,                                    -- 수락 여부
     reason TEXT,                                              -- 수락/거절 사유 (자유 입력)
     selected_at TIMESTAMP DEFAULT now()
+);
+
+--14. alarm_event_log (불량 alarm trigger 발동 관련)
+CREATE TABLE alarm_event_log (
+    event_id SERIAL PRIMARY KEY,                            -- 알람 식별자 (자동 증가 ID)
+    upload_id VARCHAR(10) REFERENCES uploads(upload_id),    -- i1/s2 형식: 데이터 유형 구분 가능
+    data_id INT NOT NULL,                                   -- input_image.id 또는 input_sensor_data.id
+    model_id VARCHAR(10) REFERENCES model_registry(id),     -- 어떤 모델이 이 알람을 발생시켰는지 추적
+    is_defect BOOLEAN NOT NULL,                             -- 모델이 예측한 라벨 (불량=False)
+    final_label BOOLEAN,                                    -- 사용자 판단에 따른 실제 라벨 입력
+    was_corrected BOOLEAN GENERATED ALWAYS AS (             -- 예측값과 실제값이 다른 경우 True
+        is_defect IS DISTINCT FROM final_label
+    ) STORED,
+    reviewer_id UUID REFERENCES users(user_id),             -- 리뷰한 사용자 ID (누가 확인했는지)
+    review_comment TEXT,                                    -- 정정 사유, 설명 (선택 필드, NULL 가능)
+    alarm_triggered_at TIMESTAMP DEFAULT now(),             -- 알람 최초 발생 시각 (예: 모델 예측 시점)
+    review_completed_at TIMESTAMP,                          -- 사람이 검토를 마친 시각
+    review_status VARCHAR DEFAULT 'pending'                 -- 검토 상태: 대시보드 필터링용
+        CHECK (review_status IN ('pending', 'completed'))
 );
 
 -- 인덱스 최적화
@@ -225,6 +246,10 @@ CREATE INDEX idx_sensor_upload ON input_sensor_data(upload_id);
 CREATE INDEX idx_image_upload ON input_image(upload_id);
 CREATE INDEX idx_target_upload ON input_target(upload_id);
 CREATE INDEX idx_model_id ON model_registry(id);
+CREATE INDEX idx_alarm_event_upload_id ON alarm_event_log(upload_id);
+CREATE INDEX idx_alarm_event_data_id ON alarm_event_log(data_id);
+CREATE INDEX idx_alarm_event_model_id ON alarm_event_log(model_id);
+CREATE INDEX idx_alarm_event_reviewer_id ON alarm_event_log(reviewer_id);
 
 -- 테스트 데이터 삽입
 INSERT INTO companies (company_id, company_name)
