@@ -55,7 +55,7 @@ CREATE TABLE uploads (
     uploader_id UUID REFERENCES users(user_id),
     file_key TEXT NOT NULL,                          -- s3에 있는 폴더 경로 예: uploads/batch_29/
     has_target BOOLEAN DEFAULT FALSE,                -- Target 존재 여부 
-    label_type label_type_enum,                      -- 이비지 
+    label_type label_type_enum,                      -- 이미지 
     task_type sensor_task_type_enum,                 -- 센서
     created_at TIMESTAMP DEFAULT now()
     CONSTRAINT check_label_or_task_type CHECK (
@@ -68,9 +68,9 @@ CREATE TABLE uploads (
 CREATE OR REPLACE FUNCTION generate_upload_id()
 RETURNS TRIGGER AS $$
 BEGIN
-    IF NEW.label_type IS NOT NULL THEN
+    IF NEW.label_type IS NOT NULL THEN -- label_type이 있으면 i 생성
         NEW.upload_id = 'i' || nextval('image_upload_seq');
-    ELSIF NEW.task_type IS NOT NULL THEN
+    ELSIF NEW.task_type IS NOT NULL THEN -- task_type이 있으면 s 생성
         NEW.upload_id = 's' || nextval('sensor_upload_seq');
     ELSE
         RAISE EXCEPTION 'label_type 또는 task_type이 필요합니다.';
@@ -137,9 +137,9 @@ BEGIN
     FROM uploads
     WHERE upload_id = NEW.trained_on_upload_id;
 
-    IF prefix = 'i' THEN
+    IF prefix = 'i' THEN  -- trained_in_upload_id가 i로 시작: i 
         NEW.id = 'i' || nextval('image_model_seq');
-    ELSIF prefix = 's' THEN
+    ELSIF prefix = 's' THEN -- 앞이 s로 시작: s
         NEW.id = 's' || nextval('sensor_model_seq');
     ELSE
         RAISE EXCEPTION 'Invalid prefix for upload_id: %', NEW.trained_on_upload_id;
