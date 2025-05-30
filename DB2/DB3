@@ -114,7 +114,7 @@ CREATE TABLE input_image (
     created_at TIMESTAMP DEFAULT now()
 );
 
--- 7. 모델 레지스트리 (활성 모델 관리, 기존에 선택된 모델들의 tracking)
+-- 7. 모델 레지스트리 (활성 모델 관리, best 모델로 선택된 모델들의 tracking)
 CREATE TABLE model_registry (
     id VARCHAR(10) PRIMARY KEY,             -- ex. i1, i2, s1, s2
     mlflow_run_id VARCHAR NOT NULL,
