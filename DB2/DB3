@@ -118,7 +118,7 @@ CREATE TABLE input_image (
 CREATE TABLE model_registry (
     id VARCHAR(10) PRIMARY KEY,             -- ex. i1, i2, s1, s2
     mlflow_run_id VARCHAR NOT NULL,
-    trained_on_upload_id VARCHAR(10) REFERENCES uploads(upload_id),
+    trained_on_upload_id VARCHAR(10) REFERENCES uploads(upload_id), -- 학습에 사용된 데이터 upload_id 가장 마지막 번호 (ex. i1~i3의 모든 데이터 학습시 i3)
     accuracy FLOAT,
     f1_score FLOAT,
     auc_score FLOAT,
