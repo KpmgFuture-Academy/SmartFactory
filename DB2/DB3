@@ -230,7 +230,7 @@ CREATE TABLE alarm_event_log (
     is_not_defect BOOLEAN NOT NULL,                             -- 모델이 예측한 라벨 (불량=False)
     final_label BOOLEAN,                                    -- 사용자 판단에 따른 실제 라벨 입력
     was_corrected BOOLEAN GENERATED ALWAYS AS (             -- 예측값과 실제값이 다른 경우 True
-        is_defect IS DISTINCT FROM final_label
+        is_not_defect IS DISTINCT FROM final_label
     ) STORED,
     reviewer_id UUID REFERENCES users(user_id),             -- 리뷰한 사용자 ID (누가 확인했는지)
     review_comment TEXT,                                    -- 정정 사유, 설명 (선택 필드, NULL 가능)
