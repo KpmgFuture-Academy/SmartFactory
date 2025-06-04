@@ -168,7 +168,7 @@ CREATE TABLE prediction_result_sensor (
 
 -- 9. 이미지 예측 결과
 CREATE TABLE prediction_result_image (
-    image_id INT PRIMARY KEY REFERENCES input_image(id),
+    image_id INT PRIMARY KEY
     upload_id VARCHAR(10) NOT NULL REFERENCES uploads(upload_id),
     model_id VARCHAR(10) REFERENCES model_registry(id),
     gradcam_path TEXT NOT NULL,
