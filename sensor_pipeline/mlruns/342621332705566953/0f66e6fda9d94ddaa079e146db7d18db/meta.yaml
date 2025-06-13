@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/Users/Admin/smartqc_v3/mlruns/342621332705566953/0f66e6fda9d94ddaa079e146db7d18db/artifacts
+end_time: 1748490295133
+entry_point_name: ''
+experiment_id: '342621332705566953'
+lifecycle_stage: active
+run_id: 0f66e6fda9d94ddaa079e146db7d18db
+run_name: kindly-dove-637
+run_uuid: 0f66e6fda9d94ddaa079e146db7d18db
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1748490295097
+status: 3
+tags: []
+user_id: Admin
