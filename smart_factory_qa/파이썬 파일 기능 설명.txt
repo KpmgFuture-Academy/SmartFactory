@@ -1,0 +1,24 @@
+파이썬 파일 정리
+
+app.py:
+generate_gradcam 함수 존재
+이미지 분류 진행 후 s3저장
+
+model_registry.py:
+upload_id에 해당하는 이미지들을 train, test 진행하여 mlflow와 DB에 저장
+
+predict_batch.py:(경로가 전부 로컬pc로 지정되어 있음)
+AI 품질 검사 모델로 이미지 일괄 예측, 엑셀 저장, 결과 및 이미지 s3 업로드
+
+s3_utils.py:
+로컬 파일 or 폴더를 s3에 업로드하고 s3 경로를 반환하는 함수
+
+s3_db_input.py
+로컬에 있는 이미지를 s3에 업로드하고 DB에 메타데이터 저장
+
+s3_watch.py:
+s3 폴더의 변화를 감지하여 predict_batch.py 실행
+
+simulate_camera_upload.py:
+로컬에 있는 사진들 일정시간마다 일정량 s3에 업로드
+비전카메라를 대체한 기능임

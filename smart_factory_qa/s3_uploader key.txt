@@ -1,0 +1,7 @@
+s3-uploader
+
+액세스키
+AKIA2UMF2NRT6ZYSUMMF
+
+비밀 액세스 키
+s/6bAvd206bInerzTT2us97JPUEF+CHVAv7gU+0W
