@@ -1,0 +1,24 @@
+DO $$
+DECLARE
+    max_image_id INT;
+    max_sensor_id INT;
+BEGIN
+    -- image upload_id 중 가장 큰 숫자 추출 (예: 'i12' -> 12)
+    SELECT COALESCE(MAX(CAST(SUBSTRING(upload_id FROM 2) AS INTEGER)), 0)
+    INTO max_image_id
+    FROM uploads
+    WHERE upload_id LIKE 'i%';
+
+    -- sensor upload_id 중 가장 큰 숫자 추출 (예: 's7' -> 7)
+    SELECT COALESCE(MAX(CAST(SUBSTRING(upload_id FROM 2) AS INTEGER)), 0)
+    INTO max_sensor_id
+    FROM uploads
+    WHERE upload_id LIKE 's%';
+
+    -- 다음 값부터 시작하도록 시퀀스 리셋
+    EXECUTE format('ALTER SEQUENCE image_upload_seq RESTART WITH %s;', max_image_id + 1);
+    EXECUTE format('ALTER SEQUENCE sensor_upload_seq RESTART WITH %s;', max_sensor_id + 1);
+
+    RAISE NOTICE 'image_upload_seq → %', max_image_id + 1;
+    RAISE NOTICE 'sensor_upload_seq → %', max_sensor_id + 1;
+END $$;
