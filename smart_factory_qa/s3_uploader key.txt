@@ -1,5 +1,10 @@
 s3-uploader
 
+<AWS 로그인 아이디/비번>
+-> Sign in using root user email 
+ID: mj0624mini@gmail.com
+PW: Bk7{f/Xu52cH5$3
+
 액세스키
 AKIA2UMF2NRT6ZYSUMMF
 
