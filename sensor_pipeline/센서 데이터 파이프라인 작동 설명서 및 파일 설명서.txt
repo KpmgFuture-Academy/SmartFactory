@@ -1,0 +1,22 @@
+센서 데이터 파이프라인 작동 설명서 및 파일 설명서
+
+main.py 실행
+
+main.py 내에서 사용되는 파일들 설명
+1. core/s3_handler.py → S3에서 파일 다운로드
+2. core/missing_handler.py → 결측값 처리
+3. core/target_selector.py → 타겟 컬럼 선택
+4. core/feature_engineer.py → 자동/수동 피쳐 엔지니어링
+5. core/sensor_limiter.py → 센서 리밋 설정
+6. core/standardizer.py → 정규화
+7. core/time_batch.py → 타임스탬프 분석, 재학습 주기 예측
+
+
+DB 관련 파일들 설명
+1. db/upload_log.py → 업로드 기록 남기기
+2. db/insert_features.py → 피쳐 DB 저장
+3. db/insert_targets.py → 타겟값 저장
+4. db/insert_model.py → 모델 메타데이터 저장
+5. db/insert_production.py → 생산 로그 저장
+6. db/insert_mttr.py → MTTR 데이터 저장
+7. db/insert_dashboard.py → 대시보드용 KPI 저장
