@@ -1,0 +1,7 @@
+이미지 데이터 파이프라인 작동 설명서
+
+1. kaggle에서 casting product image data for quality inspection 데이터 다운로드한 뒤 camera 폴더에 이미지들을 넣는다
+
+2. 아나콘다 프롬프트, 혹은 vs code 터미널에 s3_watch.py, s3_db_input.py, simulate_camera_upload.py를 순서대로 실행한다
+
+3. 모든 사진의 분류가 끝난 뒤 S3와 DB를 확인해보면 결과들이 저장되어 있다.
