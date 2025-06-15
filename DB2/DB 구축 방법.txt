@@ -1,0 +1,18 @@
+DB 구축 방법
+
+1. PostgeSQL 다운로드
+
+2. Pgadmin4 실행
+
+3. 아래에 해당하는 DB info 입력하여 DB server 생성
+
+<DB info>
+DB_INFO = {
+    'host': 'localhost',
+    'port': '5432',
+    'dbname': 'postgres',
+    'user': 'postgres',
+    'password': '0523'
+}
+
+4. DB 구축 스크립트를 복사하여 붙여넣고 실행
