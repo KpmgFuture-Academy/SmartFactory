@@ -1,0 +1,15 @@
+📁 main.py
+
+- S3 폴더/파일 탐색 (/list_folders, /list_files_in_folder)
+- 센서 CSV 컬럼 조회 및 DB 저장 (/load_columns, /ingest_csv_to_db)
+- 이미지 메타 저장 (/ingest_images)
+- 미리보기 기능 제공 (/preview_csv, /preview_image)
+→ 센서데이터: input_sensor_data, input_target
+→ 이미지데이터: input_image
+→ 공통 메타: uploads
+
+📁 streamlit_app.py
+
+- S3 폴더 선택 → 파일 분류
+- 센서 CSV 업로드: Binary/Multi-label 선택 → 업로드 및 미리보기
+- 이미지 업로드: 폴더별 라벨 지정 → 업로드 및 메타 미리보기
